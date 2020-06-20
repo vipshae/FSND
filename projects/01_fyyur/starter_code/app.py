@@ -13,6 +13,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import FlaskForm
 from forms import *
 from flask_migrate import Migrate
+from datetime import timedelta
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -30,11 +31,11 @@ migrate = Migrate(app, db)
 
 class Shows(db.Model):	
 	__tablename__ = 'Show'
-	venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
-	artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
+	venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True)
+	artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id', ondelete='CASCADE'), primary_key=True)
 	start_time = db.Column(db.DateTime, default=db.func.current_timestamp())
-	show_venue = db.relationship('Venue', backref="assoc_artists")
-	show_artist = db.relationship('Artist', backref="assoc_venues")
+	show_venue = db.relationship('Venue', backref="assoc_shows", passive_deletes=True, lazy=True)
+	show_artist = db.relationship('Artist', backref="assoc_shows", passive_deletes=True, lazy=True)
 
 class Area(db.Model):
 	__tablename__ = 'Area'
@@ -56,7 +57,6 @@ class Venue(db.Model):
 	seeking_talent = db.Column(db.Boolean, default=False)
 	seeking_description = db.Column(db.String(500))
 
-	# TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
 	__tablename__ = 'Artist'
@@ -226,7 +226,15 @@ def show_venue(venue_id):
 	}
 	#data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
 	venue_data = Venue.query.get(venue_id)
-	return render_template('pages/show_venue.html', venue=venue_data)
+	venue_past_shows = list(filter(lambda el: el.start_time < datetime.now(), venue_data.assoc_shows))
+	#venue_past_shows = venue_data.assoc_shows.filter_by((Shows.start_time + timedelta(days=1)) < datetime.now())
+	venue_upcoming_shows = list(filter(lambda el: el.start_time >= datetime.now(), venue_data.assoc_shows))
+	#venue_upcoming_shows = venue_data.assoc_shows.filter((Shows.start_time + timedelta(days=1)) >= datetime.now())
+
+	return render_template('pages/show_venue.html', 
+													venue=venue_data, 
+													venue_past_shows=venue_past_shows, 
+													venue_upcoming_shows=venue_upcoming_shows)
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -413,7 +421,15 @@ def show_artist(artist_id):
 	}
 	#data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
 	artist_data = Artist.query.get(artist_id)
-	return render_template('pages/show_artist.html', artist=artist_data)
+
+	artist_past_shows = list(filter(lambda el: el.start_time < datetime.now(), artist_data.assoc_shows))
+	#venue_past_shows = venue_data.assoc_shows.filter_by((Shows.start_time + timedelta(days=1)) < datetime.now())
+	artist_upcoming_shows = list(filter(lambda el: el.start_time >= datetime.now(), artist_data.assoc_shows))
+	#venue_upcoming_shows = venue_data.assoc_shows.filter((Shows.start_time + timedelta(days=1)) >= datetime.now())
+	return render_template('pages/show_artist.html', artist=artist_data,
+													artist_past_shows=artist_past_shows,
+													artist_upcoming_shows=artist_upcoming_shows)
+
 
 
 @app.route('/artists/create', methods=['GET'])
