@@ -72,24 +72,27 @@
 	</div>
 </section>
 
+<div class="edit-venue">
+  <button class="editbtn" data-id="{{ artist.id }}" type="button" onclick="window.location.href='{{ url_for( 'edit_artist', artist_id=artist.id ) }}';">Edit Artist</button>
+</div>
 <div class="delete-artist">
   <button class="deletebtn" data-id="{{ artist.id }}" type="button">Delete Artist &cross;</button>
 </div>
 <script>
   const deleteBtns = document.querySelectorAll('.delete-artist');
-    for (let i = 0; i < deleteBtns.length; i++) { 
-      const deleteButton = deleteBtns[i];      
-      deleteButton.onclick = function(e) {
-        console.log('Delete Artist:', e);
-        const Id = e.target.dataset['id'];
-        fetch('/artists/' + Id, {
-        method: 'DELETE'
-        })
-        .then(()=> {
-          window.location = "/";
-        })
-      }
+  for (let i = 0; i < deleteBtns.length; i++) { 
+    const deleteButton = deleteBtns[i];      
+    deleteButton.onclick = function(e) {
+      console.log('Delete Artist:', e);
+      const Id = e.target.dataset['id'];
+      fetch('/artists/' + Id, {
+      method: 'DELETE'
+      })
+      .then(()=> {
+        window.location = "/";
+      })
     }
+  }
 </script>
 
 

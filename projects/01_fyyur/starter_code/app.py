@@ -8,6 +8,7 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort, jsonify
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import FlaskForm
@@ -24,6 +25,17 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+CORS(app)
+
+#----------------------------------------------------------------------------#
+# CORS Headers.
+#----------------------------------------------------------------------------#
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+  return response
+
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -44,32 +56,33 @@ class Area(db.Model):
 	venues = db.relationship('Venue', backref='area', lazy=True)
 
 class Venue(db.Model):	
-	__tablename__ = 'Venue'
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String)
-	city = db.Column(db.String(120), db.ForeignKey('Area.city'))
-	state = db.Column(db.String(120))
-	address = db.Column(db.String(120))
-	phone = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
-	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120))
-	seeking_talent = db.Column(db.Boolean, server_default='f')
-	seeking_description = db.Column(db.String(500))
+		__tablename__ = 'Venue'
+		id = db.Column(db.Integer, primary_key=True)
+		name = db.Column(db.String)
+		city = db.Column(db.String(120), db.ForeignKey('Area.city'))
+		state = db.Column(db.String(120))
+		address = db.Column(db.String(120))
+		phone = db.Column(db.String(120))
+		genres = db.Column(db.String(120))
+		image_link = db.Column(db.String(500))
+		facebook_link = db.Column(db.String(120))
+		seeking_talent = db.Column(db.Boolean, server_default='f')
+		seeking_description = db.Column(db.String(500))
 
 
 class Artist(db.Model):
-	__tablename__ = 'Artist'
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String)
-	city = db.Column(db.String(120))
-	state = db.Column(db.String(120))
-	phone = db.Column(db.String(120))
-	genres = db.Column(db.String(120))
-	image_link = db.Column(db.String(500))
-	facebook_link = db.Column(db.String(120))
-	seeking_venue = db.Column(db.Boolean, server_default='f')
-	seeking_description = db.Column(db.String(500))
+		__tablename__ = 'Artist'
+		id = db.Column(db.Integer, primary_key=True)
+		name = db.Column(db.String)
+		city = db.Column(db.String(120))
+		state = db.Column(db.String(120))
+		phone = db.Column(db.String(120))
+		genres = db.Column(db.String(120))
+		image_link = db.Column(db.String(500))
+		facebook_link = db.Column(db.String(120))
+		seeking_venue = db.Column(db.Boolean, server_default='f')
+		seeking_description = db.Column(db.String(500))
+		
 
 
 #----------------------------------------------------------------------------#
@@ -319,7 +332,7 @@ def artists():
 		"id": 6,
 		"name": "The Wild Sax Band",
 	}]
-	artist_data = Artist.query.all()
+	artist_data = Artist.query.order_by('id').all()
 	return render_template('pages/artists.html', artists=artist_data)
 
 

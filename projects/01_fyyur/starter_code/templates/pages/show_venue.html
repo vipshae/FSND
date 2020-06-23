@@ -74,6 +74,9 @@
 		{% endfor %}
 	</div>
 </section>
+<div class="edit-venue">
+  <button class="editbtn" data-id="{{ venue.id }}" type="button" onclick="window.location.href='{{ url_for( 'edit_venue', venue_id=venue.id ) }}';">Edit Venue</button>
+</div>
 <div class="delete-venue">
   <button class="deletebtn" data-id="{{ venue.id }}" type="button">Delete Venue &cross;</button>
 </div>
